@@ -1,6 +1,8 @@
 # Adonis Ally Authentik Driver
+[![NPM version](https://img.shields.io/npm/v/adonis-ally-authentik
+)](https://www.npmjs.com/package/adonis-ally-authentik)
 
-A [Authentik](https://goauthentik.io/) driver for [AdonisJS Ally](https://docs.adonisjs.com/guides/auth/social)
+[Authentik](https://goauthentik.io/) driver for [AdonisJS Ally](https://docs.adonisjs.com/guides/auth/social)
 
 You can test this for another IdP like Keycloak i guess (not tested)
 ## Getting started

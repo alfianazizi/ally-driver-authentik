@@ -1,6 +1,6 @@
 {
   "name": "adonis-ally-authentik",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Custom ally driver for authentik",
   "main": "build/providers/index.js",
   "files": [

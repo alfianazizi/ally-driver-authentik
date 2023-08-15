@@ -44,8 +44,8 @@ const allyConfig: AllyConfig = {
   authentik: {
     driver: 'authentik',
     clientId: Env.get('AUTHENTIK_CLIENT_ID'),
-		clientSecret: Env.get('AUTHENTIK_CLIENT_SECRET'),
-		callbackUrl: Env.get('AUTHENTIK_CALLBACK_URL'),
+    clientSecret: Env.get('AUTHENTIK_CLIENT_SECRET'),
+    callbackUrl: Env.get('AUTHENTIK_CALLBACK_URL'),
     authorizeUrl: Env.get('AUTHENTIK_AUTHORIZE_URL'),
     userInfoUrl: Env.get('AUTHENTIK_USERINFO_URL'),
     accessTokenUrl: Env.get('AUTHENTIK_ACCESSTOKEN_URL'),

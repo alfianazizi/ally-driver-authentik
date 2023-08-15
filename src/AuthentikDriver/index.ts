@@ -10,9 +10,9 @@
 |
 */
 
-import type { AllyUserContract } from '@ioc:Adonis/Addons/Ally'
+import type { ApiRequestContract } from '@ioc:Adonis/Addons/Ally'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { Oauth2Driver, ApiRequest } from '@adonisjs/ally/build/standalone'
+import { Oauth2Driver, ApiRequest, RedirectRequest } from '@adonisjs/ally/build/standalone'
 
 /**
  * Define the access token object properties in this type. It
@@ -20,12 +20,16 @@ import { Oauth2Driver, ApiRequest } from '@adonisjs/ally/build/standalone'
  * more properties.
  *
  * ------------------------------------------------
- * Change "YourDriver" to something more relevant
+ * Change "AuthentikDriver" to something more relevant
  * ------------------------------------------------
  */
-export type YourDriverAccessToken = {
+export type AuthentikDriverAccessToken = {
   token: string
   type: 'bearer'
+  refreshToken: string
+  expiresIn: number
+  expiresAt: any
+  scope: string[]
 }
 
 /**
@@ -33,58 +37,63 @@ export type YourDriverAccessToken = {
  * https://github.com/adonisjs/ally/blob/develop/adonis-typings/ally.ts#L236-L268
  *
  * ------------------------------------------------
- * Change "YourDriver" to something more relevant
+ * Change "AuthentikDriver" to something more relevant
  * ------------------------------------------------
  */
-export type YourDriverScopes = string
+export type AuthentikDriverScopes = 'openid' | 'profile' | 'email'
 
+export type LiteralStringUnion<LiteralType> = LiteralType | (string & { _?: never })
 /**
  * Define the configuration options accepted by your driver. It must have the following
  * properties and you are free add more.
  *
  * ------------------------------------------------
- * Change "YourDriver" to something more relevant
+ * Change "AuthentikDriver" to something more relevant
  * ------------------------------------------------
  */
-export type YourDriverConfig = {
-  driver: 'YourDriverName'
+export type AuthentikDriverConfig = {
+  driver: 'authentik'
   clientId: string
   clientSecret: string
   callbackUrl: string
-  authorizeUrl?: string
-  accessTokenUrl?: string
-  userInfoUrl?: string
+  authorizeUrl: string
+  accessTokenUrl: string
+  userInfoUrl: string
+  scopes?: LiteralStringUnion<AuthentikDriverScopes>[]
 }
 
 /**
  * Driver implementation. It is mostly configuration driven except the user calls
  *
  * ------------------------------------------------
- * Change "YourDriver" to something more relevant
+ * Change "AuthentikDriver" to something more relevant
  * ------------------------------------------------
  */
-export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverScopes> {
+export class AuthentikDriver extends Oauth2Driver<
+  AuthentikDriverAccessToken,
+  AuthentikDriverScopes
+> {
   /**
    * The URL for the redirect request. The user will be redirected on this page
    * to authorize the request.
    *
    * Do not define query strings in this URL.
    */
-  protected authorizeUrl = ''
+  protected authorizeUrl = this.config.authorizeUrl
 
   /**
    * The URL to hit to exchange the authorization code for the access token
    *
    * Do not define query strings in this URL.
    */
-  protected accessTokenUrl = ''
+  protected accessTokenUrl = this.config.accessTokenUrl
 
   /**
    * The URL to hit to get the user details
    *
    * Do not define query strings in this URL.
    */
-  protected userInfoUrl = ''
+  protected userInfoUrl = this.config.userInfoUrl
 
   /**
    * The param name for the authorization code. Read the documentation of your oauth
@@ -105,7 +114,7 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
    * approach is to prefix the oauth provider name to `oauth_state` value. For example:
    * For example: "facebook_oauth_state"
    */
-  protected stateCookieName = 'YourDriver_oauth_state'
+  protected stateCookieName = 'oidc_oauth_state'
 
   /**
    * Parameter name to be used for sending and receiving the state from.
@@ -125,7 +134,7 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
    */
   protected scopesSeparator = ' '
 
-  constructor(ctx: HttpContextContract, public config: YourDriverConfig) {
+  constructor(ctx: HttpContextContract, public config: AuthentikDriverConfig) {
     super(ctx, config)
 
     /**
@@ -142,7 +151,15 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
    * is made by the base implementation of "Oauth2" driver and this is a
    * hook to pre-configure the request.
    */
-  // protected configureRedirectRequest(request: RedirectRequest<YourDriverScopes>) {}
+  protected configureRedirectRequest(request: RedirectRequest<AuthentikDriverScopes>) {
+    /**
+     * Define user defined scopes or the default one's
+     */
+    request.scopes(this.config.scopes || ['openid', 'email', 'profile'])
+
+    request.param('response_type', 'code')
+    request.param('grant_type', 'authorization_code')
+  }
 
   /**
    * Optionally configure the access token request. The actual request is made by
@@ -156,7 +173,45 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
    * means "ACCESS DENIED".
    */
   public accessDenied() {
-    return this.ctx.request.input('error') === 'user_denied'
+    const error = this.getError()
+    if (!error) {
+      return false
+    }
+
+    return error === 'access_denied'
+  }
+
+  protected getAuthenticatedRequest(url: string, token: string) {
+    console.log(url, token)
+    const request = this.httpClient(url)
+    request.header('Authorization', `Bearer ${token}`)
+    request.header('Client-id', this.config.clientId)
+    request.header('Accept', 'application/json')
+    request.parseAs('json')
+    return request
+  }
+
+  protected async getUserInfo(token: string, callback?: (request: ApiRequestContract) => void) {
+    const request = this.getAuthenticatedRequest(this.userInfoUrl, token)
+    if (typeof callback === 'function') {
+      callback(request)
+    }
+
+    const body = await request.get()
+    const data = body
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Authentik returns snake_case
+    const { aud, preferred_username, nickname, name, email } = data
+
+    return {
+      id: aud,
+      preferred_username: preferred_username,
+      nickName: nickname,
+      emailVerificationState: 'unsupported' as const,
+      avatarUrl: 'unsupported' as const,
+      name: name,
+      email: email,
+      original: data,
+    }
   }
 
   /**
@@ -166,41 +221,22 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
    *
    * https://github.com/adonisjs/ally/blob/develop/src/Drivers/Google/index.ts#L191-L199
    */
-  public async user(
-    callback?: (request: ApiRequest) => void
-  ): Promise<AllyUserContract<YourDriverAccessToken>> {
-    const accessToken = await this.accessToken()
-    const request = this.httpClient(this.config.userInfoUrl || this.userInfoUrl)
+  public async user(callback?: (request: ApiRequest) => void) {
+    const token = await this.accessToken(callback)
+    const user = await this.getUserInfo(token.token, callback)
 
-    /**
-     * Allow end user to configure the request. This should be called after your custom
-     * configuration, so that the user can override them (if required)
-     */
-    if (typeof callback === 'function') {
-      callback(request)
+    return {
+      ...user,
+      token: token,
     }
-
-    /**
-     * Write your implementation details here
-     */
   }
 
-  public async userFromToken(
-    accessToken: string,
-    callback?: (request: ApiRequest) => void
-  ): Promise<AllyUserContract<{ token: string; type: 'bearer' }>> {
-    const request = this.httpClient(this.config.userInfoUrl || this.userInfoUrl)
+  public async userFromToken(token: string, callback?: (request: ApiRequestContract) => void) {
+    const user = await this.getUserInfo(token, callback)
 
-    /**
-     * Allow end user to configure the request. This should be called after your custom
-     * configuration, so that the user can override them (if required)
-     */
-    if (typeof callback === 'function') {
-      callback(request)
+    return {
+      ...user,
+      token: { token, type: 'bearer' as const },
     }
-
-    /**
-     * Write your implementation details here
-     */
   }
 }

@@ -1,7 +1,7 @@
 {
-  "name": "ally-custom-driver",
-  "version": "0.0.0",
-  "description": "A boilerplate for a custom ally driver",
+  "name": "adonis-ally-authentik",
+  "version": "1.0.0",
+  "description": "Custom ally driver for authentik",
   "main": "build/providers/index.js",
   "files": [
     "build/src",
@@ -30,6 +30,7 @@
     "@adonisjs/ally": "^4.0.0",
     "@adonisjs/core": "^5.1.8",
     "@types/node": "^15.12.2",
+    "copyfiles": "^2.4.1",
     "del-cli": "^3.0.1",
     "eslint": "^7.28.0",
     "eslint-config-prettier": "^8.3.0",
@@ -45,12 +46,16 @@
   "adonisjs": {
     "instructionsMd": "./build/instructions.md",
     "env": {
-      "YOUR_DRIVER_CLIENT_ID": "",
-      "YOUR_DRIVER_CLIENT_SECRET": ""
+      "AUTHENTIK_CLIENT_ID": "",
+      "AUTHENTIK_CLIENT_SECRET": "",
+      "AUTHENTIK_CALLBACK_URL": "",
+      "AUTHENTIK_AUTHORIZE_URL": "",
+      "AUTHENTIK_USERINFO_URL": "",
+      "AUTHENTIK_ACCESSTOKEN_URL": ""
     },
-    "types": "ally-custom-driver",
+    "types": "adonis-ally-authentik",
     "providers": [
-      "ally-custom-driver"
+      "adonis-ally-authentik"
     ]
   }
 }

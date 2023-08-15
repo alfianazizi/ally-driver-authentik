@@ -182,7 +182,6 @@ export class AuthentikDriver extends Oauth2Driver<
   }
 
   protected getAuthenticatedRequest(url: string, token: string) {
-    console.log(url, token)
     const request = this.httpClient(url)
     request.header('Authorization', `Bearer ${token}`)
     request.header('Client-id', this.config.clientId)

@@ -1,8 +1,9 @@
 {
   "name": "adonis-ally-authentik",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Custom ally driver for authentik",
   "main": "build/providers/index.js",
+  "type": "module",
   "files": [
     "build/src",
     "build/providers",
@@ -11,14 +12,9 @@
     "build/instructions.md"
   ],
   "scripts": {
-    "clean": "del build",
-    "copyfiles": "copyfiles \"instructions.md\" build",
-    "compile": "npm run lint && npm run clean && tsc",
-    "build": "npm run compile && npm run copyfiles",
-    "prepublishOnly": "npm run build",
+    "build": "tsc",
     "lint": "eslint . --ext=.ts",
-    "format": "prettier --write .",
-    "version": "npm run build"
+    "format": "prettier --write ."
   },
   "keywords": [
     "adonisjs",
@@ -27,24 +23,20 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@adonisjs/ally": "^4.0.0",
-    "@adonisjs/core": "^5.1.8",
-    "@types/node": "^15.12.2",
-    "copyfiles": "^2.4.1",
-    "del-cli": "^3.0.1",
-    "eslint": "^7.28.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-adonis": "^1.3.2",
-    "eslint-plugin-prettier": "^3.4.0",
-    "prettier": "^2.3.1",
-    "typescript": "^4.3.2"
+    "@adonisjs/ally": "^5.0.0-7",
+    "@adonisjs/core": "^6.1.5-32",
+    "@adonisjs/eslint-config": "^1.3.0",
+    "@adonisjs/prettier-config": "^1.3.0",
+    "@adonisjs/tsconfig": "^1.3.0",
+    "@swc/core": "^1.6.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "@adonisjs/ally": "^4.0.0",
-    "@adonisjs/core": "^5.0.0"
+    "@adonisjs/ally": "^5.0.0-7",
+    "@adonisjs/core": "^6.1.5-32"
   },
   "adonisjs": {
-    "instructionsMd": "./build/instructions.md",
     "env": {
       "AUTHENTIK_CLIENT_ID": "",
       "AUTHENTIK_CLIENT_SECRET": "",
@@ -53,9 +45,10 @@
       "AUTHENTIK_USERINFO_URL": "",
       "AUTHENTIK_ACCESSTOKEN_URL": ""
     },
-    "types": "adonis-ally-authentik",
-    "providers": [
-      "adonis-ally-authentik"
-    ]
-  }
+    "types": "adonis-ally-authentik"
+  },
+  "eslintConfig": {
+    "extends": "@adonisjs/eslint-config/package"
+  },
+  "prettier": "@adonisjs/prettier-config"
 }

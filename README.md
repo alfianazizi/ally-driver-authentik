@@ -1,10 +1,11 @@
 # Adonis Ally Authentik Driver
-[![NPM version](https://img.shields.io/npm/v/adonis-ally-authentik
-)](https://www.npmjs.com/package/adonis-ally-authentik)
+
+[![NPM version](https://img.shields.io/npm/v/adonis-ally-authentik)](https://www.npmjs.com/package/adonis-ally-authentik)
 
 [Authentik](https://goauthentik.io/) driver for [AdonisJS Ally](https://docs.adonisjs.com/guides/auth/social)
 
 You can test this for another IdP like Keycloak i guess (not tested)
+
 ## Getting started
 
 ### 1. Install the package
@@ -27,32 +28,25 @@ yarn add adonis-ally-authentik
 node ace configure adonis-ally-authentik
 ```
 
-### 3. Validate environment variables
+### 3. Register the service inside the configuration file `config/ally.ts`
 
 ```ts
-AUTHENTIK_CLIENT_ID: Env.schema.string(),
-AUTHENTIK_CLIENT_SECRET: Env.schema.string(),
-AUTHENTIK_CALLBACK_URL: Env.schema.string(),
-AUTHENTIK_AUTHORIZE_URL: Env.schema.string(),
-AUTHENTIK_USERINFO_URL: Env.schema.string(),
-AUTHENTIK_ACCESSTOKEN_URL: Env.schema.string(),
-```
+// config/ally.ts
+import { defineConfig } from '@adonisjs/ally'
+import { AuthentikDriver } from 'adonis-ally-authentik'
+import env from '#start/env'
 
-### 4. Add variables to your ally configuration
-
-```ts
-const allyConfig: AllyConfig = {
-  // ... other drivers
-  authentik: {
+const allyConfig = defineConfig({
+  authentik: AuthentikDriverService({
     driver: 'authentik',
-    clientId: Env.get('AUTHENTIK_CLIENT_ID'),
-    clientSecret: Env.get('AUTHENTIK_CLIENT_SECRET'),
-    callbackUrl: Env.get('AUTHENTIK_CALLBACK_URL'),
-    authorizeUrl: Env.get('AUTHENTIK_AUTHORIZE_URL'),
-    userInfoUrl: Env.get('AUTHENTIK_USERINFO_URL'),
-    accessTokenUrl: Env.get('AUTHENTIK_ACCESSTOKEN_URL'),
-  },
-}
+    clientId: env.get('AUTHENTIK_CLIENT_ID', ''),
+    clientSecret: env.get('AUTHENTIK_CLIENT_SECRET', ''),
+    callbackUrl: env.get('AUTHENTIK_CALLBACK_URL', ''),
+    authorizeUrl: env.get('AUTHENTIK_AUTHORIZE_URL', ''),
+    accessTokenUrl: env.get('AUTHENTIK_ACCESSTOKEN_URL', ''),
+    userInfoUrl: env.get('AUTHENTIK_USERINFO_URL', ''),
+  })
+})
 ```
 
 ## Scopes

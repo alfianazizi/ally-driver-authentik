@@ -10,9 +10,9 @@
 |
 */
 
-import type { ApiRequestContract } from '@ioc:Adonis/Addons/Ally'
-import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { Oauth2Driver, ApiRequest, RedirectRequest } from '@adonisjs/ally/build/standalone'
+import type { AllyDriverContract, ApiRequestContract } from '@adonisjs/ally/types'
+import { Oauth2Driver, RedirectRequest } from '@adonisjs/ally'
+import type { HttpContext } from '@adonisjs/core/http'
 
 /**
  * Define the access token object properties in this type. It
@@ -69,31 +69,31 @@ export type AuthentikDriverConfig = {
  * Change "AuthentikDriver" to something more relevant
  * ------------------------------------------------
  */
-export class AuthentikDriver extends Oauth2Driver<
-  AuthentikDriverAccessToken,
-  AuthentikDriverScopes
-> {
+export class AuthentikDriver
+  extends Oauth2Driver<AuthentikDriverAccessToken, AuthentikDriverScopes>
+  implements AllyDriverContract<AuthentikDriverAccessToken, AuthentikDriverScopes>
+{
   /**
    * The URL for the redirect request. The user will be redirected on this page
    * to authorize the request.
    *
    * Do not define query strings in this URL.
    */
-  protected authorizeUrl = this.config.authorizeUrl
+  protected authorizeUrl = ''
 
   /**
    * The URL to hit to exchange the authorization code for the access token
    *
    * Do not define query strings in this URL.
    */
-  protected accessTokenUrl = this.config.accessTokenUrl
+  protected accessTokenUrl = ''
 
   /**
    * The URL to hit to get the user details
    *
    * Do not define query strings in this URL.
    */
-  protected userInfoUrl = this.config.userInfoUrl
+  protected userInfoUrl = ''
 
   /**
    * The param name for the authorization code. Read the documentation of your oauth
@@ -134,8 +134,12 @@ export class AuthentikDriver extends Oauth2Driver<
    */
   protected scopesSeparator = ' '
 
-  constructor(ctx: HttpContextContract, public config: AuthentikDriverConfig) {
+  constructor(ctx: HttpContext, public config: AuthentikDriverConfig) {
     super(ctx, config)
+
+    this.authorizeUrl = this.config.authorizeUrl
+    this.accessTokenUrl = this.config.accessTokenUrl
+    this.userInfoUrl = this.config.userInfoUrl
 
     /**
      * Extremely important to call the following method to clear the
@@ -220,7 +224,7 @@ export class AuthentikDriver extends Oauth2Driver<
    *
    * https://github.com/adonisjs/ally/blob/develop/src/Drivers/Google/index.ts#L191-L199
    */
-  public async user(callback?: (request: ApiRequest) => void) {
+  public async user(callback?: (request: ApiRequestContract) => void) {
     const token = await this.accessToken(callback)
     const user = await this.getUserInfo(token.token, callback)
 
@@ -238,4 +242,10 @@ export class AuthentikDriver extends Oauth2Driver<
       token: { token, type: 'bearer' as const },
     }
   }
+}
+
+export function AuthentikDriverService(
+  config: AuthentikDriverConfig
+): (ctx: HttpContext) => AuthentikDriver {
+  return (ctx) => new AuthentikDriver(ctx, config)
 }

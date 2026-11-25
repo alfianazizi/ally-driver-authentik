@@ -203,10 +203,10 @@ export class AuthentikDriver
     const body = await request.get()
     const data = body
     // eslint-disable-next-line @typescript-eslint/naming-convention -- Authentik returns snake_case
-    const { aud, preferred_username, nickname, name, email } = data
+    const { sub, preferred_username, nickname, name, email } = data
 
     return {
-      id: aud,
+      id: sub,
       preferred_username: preferred_username,
       nickName: nickname,
       emailVerificationState: 'unsupported' as const,

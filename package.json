@@ -1,15 +1,11 @@
 {
   "name": "adonis-ally-authentik",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Custom ally driver for authentik",
-  "main": "build/providers/index.js",
+  "main": "build/index.js",
   "type": "module",
   "files": [
-    "build/src",
-    "build/providers",
-    "build/standalone.js",
-    "build/standalone.d.ts",
-    "build/instructions.md"
+    "build"
   ],
   "scripts": {
     "build": "tsc",
@@ -33,8 +29,8 @@
     "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "@adonisjs/ally": "^5.0.0-7",
-    "@adonisjs/core": "^6.1.5-32"
+    "@adonisjs/ally": "^5.0.0 || ^6.0.0",
+    "@adonisjs/core": "^6.1.5 || ^7.0.0"
   },
   "adonisjs": {
     "env": {

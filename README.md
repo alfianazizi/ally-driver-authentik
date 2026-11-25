@@ -33,7 +33,7 @@ node ace configure adonis-ally-authentik
 ```ts
 // config/ally.ts
 import { defineConfig } from '@adonisjs/ally'
-import { AuthentikDriver } from 'adonis-ally-authentik'
+import { AuthentikDriverService } from 'adonis-ally-authentik'
 import env from '#start/env'
 
 const allyConfig = defineConfig({
